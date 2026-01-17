@@ -48,12 +48,25 @@ try {
     
     // 2. Serve WebUI static files (Dashboard)
     // In production, this would point to web-admin/dist
-    const adminDist = path.join(process.cwd(), 'web-admin', 'dist');
-    const adminIndex = path.join(adminDist, 'index.html');
-    if (fs.existsSync(adminIndex)) {
-        app.use('/admin', express.static(adminDist));
-        app.get('/admin', (_req, res) => res.sendFile(adminIndex));
-        app.get(/^\/admin\/.*$/, (_req, res) => res.sendFile(adminIndex));
+    const resolveAdminDist = () => {
+        const candidates: string[] = [];
+        const envRaw = String(process.env.ADMIN_DIST || process.env.ADMIN_UI_DIST || '').trim();
+        if (envRaw) {
+            candidates.push(path.isAbsolute(envRaw) ? envRaw : path.resolve(process.cwd(), envRaw));
+        }
+        const baseDir = path.resolve(__dirname, '..');
+        candidates.push(path.join(baseDir, '..', 'front-end', 'dist'));
+        for (const dir of candidates) {
+            const idx = path.join(dir, 'index.html');
+            if (fs.existsSync(idx)) return { dir, index: idx };
+        }
+        return null;
+    };
+    const admin = resolveAdminDist();
+    if (admin) {
+        app.use('/admin', express.static(admin.dir));
+        app.get('/admin', (_req, res) => res.sendFile(admin.index));
+        app.get(/^\/admin\/.*$/, (_req, res) => res.sendFile(admin.index));
     }
     app.use(express.static(path.join(__dirname, '../public')));
     
@@ -679,9 +692,9 @@ try {
     // ------------------------
 
     // 5. Start Server
-    server.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
-        console.log(`WebSocket is accessible at ws://localhost:${PORT}`);
+    server.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on http://0.0.0.0:${PORT}`);
+        console.log(`WebSocket is accessible at ws://0.0.0.0:${PORT}`);
     });
 
     // Handle process termination to close server gracefully

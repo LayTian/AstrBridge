@@ -423,34 +423,5 @@
         </div>
       </div>
     </div>
-    <script>
-      (function () {
-        const adminHref = '/admin/';
-        const go = (href) => () => {
-          window.location.href = href;
-        };
-        const buttons = Array.from(document.querySelectorAll('a.btn'));
-        const adminBtn = buttons.find((b) => b.getAttribute('href') === adminHref);
-        const fallback = 'http://localhost:5174/';
-
-        const tryAdmin = async (path, fb) => {
-          try {
-            const r = await fetch(path, { method: 'GET', cache: 'no-store' });
-            if (r.ok || (r.status >= 300 && r.status < 500)) {
-              window.location.href = path;
-              return;
-            }
-          } catch (_) {}
-          window.location.href = fb;
-        };
-
-        if (adminBtn) {
-          adminBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            tryAdmin(adminHref, fallback);
-          });
-        }
-      })();
-    </script>
   </body>
 </html>

@@ -6,10 +6,10 @@
 
 ```html
 <script type="module">
-  import { AdapterClient } from "http://localhost:8080/sdk/adapter-client.mjs";
+  import { AdapterClient } from "http://103.236.55.143:8080/sdk/adapter-client.mjs";
 
   const client = new AdapterClient({
-    url: "ws://localhost:8080",
+    url: "ws://103.236.55.143:8080",
     // userId 可不传：会自动生成并写入 localStorage（同一浏览器稳定）
     // sessionId 可不传：会为每个 tab 自动生成（写入 sessionStorage）
   });
@@ -23,9 +23,9 @@
 ## 方式二：UMD（传统 script）
 
 ```html
-<script src="http://localhost:8080/sdk/adapter-client.umd.js"></script>
+<script src="http://103.236.55.143:8080/sdk/adapter-client.umd.js"></script>
 <script>
-  const client = new window.AdapterClient({ url: "ws://localhost:8080" });
+  const client = new window.AdapterClient({ url: "ws://103.236.55.143:8080" });
   client.onReply((text) => console.log("bot:", text));
   client.connect().then(() => client.sendText("hello"));
 <\/script>

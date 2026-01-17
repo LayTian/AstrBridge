@@ -33,13 +33,6 @@ npm start
 ```
 
 服务默认监听：`http://localhost:8080`
-（部署到服务器后请以 `http://你的域名:端口` 或 `http://103.236.55.143:端口` 访问；生产环境建议走 Nginx + HTTPS）
-
-管理后台静态资源目录（生产环境）：
-- 默认会自动探测（存在即挂载到 `/admin/`）：
-  - `../front-end/dist`（仓库前后端分离构建产物）
-- 也可通过环境变量显式指定：
-  - `ADMIN_DIST=/abs/path/to/dist` 或 `ADMIN_DIST=relative/path/to/dist`
 
 ### 3) 启动 web-admin
 
@@ -50,7 +43,6 @@ npm run dev
 ```
 
 打开：`http://localhost:5174/`
-（生产环境由后端托管静态资源时，通常直接访问 `http(s)://你的域名/admin/`）
 
 ## 鉴权说明（Dual-token）
 - `POST /api/auth/login`：账号密码登录，返回 `access_token`，同时下发 `refresh_token`（httpOnly Cookie）
@@ -95,8 +87,7 @@ npm run dev
 示例：
 
 ```bash
-BASE_URL="http://103.236.55.143:8080"
-curl -X POST "$BASE_URL/api/integrations/webhook/events" \
+curl -X POST "http://localhost:8080/api/integrations/webhook/events" \
   -H "Content-Type: application/json" \
   -H "x-integration-secret: <可选>" \
   -d "{\"user_id\":\"10001\",\"text\":\"你好\"}"
@@ -125,7 +116,7 @@ curl -X POST "$BASE_URL/api/integrations/webhook/events" \
 - 或通过你自己的前端开发服务器代理 `/api` 到本服务（避免 CORS 问题）
 
 如需跨域访问，可配置：
-- `CORS_ALLOW_ORIGINS`：逗号分隔的 allow list（例如 `https://your-domain.com,http://103.236.55.143:5174`）
+- `CORS_ALLOW_ORIGINS`：逗号分隔的 allow list（例如 `http://localhost:5174,http://127.0.0.1:5174`）
 
 ## 测试
 

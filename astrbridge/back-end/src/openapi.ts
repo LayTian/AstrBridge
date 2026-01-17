@@ -395,14 +395,16 @@ AstrBridge 是一个面向 AstrBot 的“消息接入网关 + 管理平台”示
         'x-code-samples': [
           {
             lang: 'cURL',
-            source: `curl -X POST http://localhost:8080/api/integrations/webhook/events \\
+            source: `BASE_URL="http://103.236.55.143:8080"
+curl -X POST "$BASE_URL/api/integrations/webhook/events" \\
   -H "Content-Type: application/json" \\
   -H "X-Integration-Secret: your_secret" \\
   -d '{"user_id": "123456", "text": "你好，我是业务系统"}'`
           },
           {
             lang: 'Node.js',
-            source: `const res = await fetch('http://localhost:8080/api/integrations/webhook/events', {
+            source: `const base = 'http://103.236.55.143:8080'
+const res = await fetch(\`\${base}/api/integrations/webhook/events\`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -419,8 +421,9 @@ console.log(await res.json());`
             lang: 'Python',
             source: `import requests
 
+base = "http://103.236.55.143:8080"
 res = requests.post(
-    'http://localhost:8080/api/integrations/webhook/events',
+    f"{base}/api/integrations/webhook/events",
     headers={'X-Integration-Secret': 'your_secret'},
     json={'user_id': '123456', 'text': '你好，我是业务系统'}
 )
@@ -453,14 +456,16 @@ print(res.json())`
         'x-code-samples': [
           {
             lang: 'cURL',
-            source: `curl -X POST http://localhost:8080/api/integrations/webhook/request-reply \\
+            source: `BASE_URL="http://103.236.55.143:8080"
+curl -X POST "$BASE_URL/api/integrations/webhook/request-reply" \\
   -H "Content-Type: application/json" \\
   -H "X-Integration-Secret: your_secret" \\
   -d '{"user_id": "123456", "text": "查询天气"}'`
           },
           {
             lang: 'Node.js',
-            source: `const res = await fetch('http://localhost:8080/api/integrations/webhook/request-reply', {
+            source: `const base = 'http://103.236.55.143:8080'
+const res = await fetch(\`\${base}/api/integrations/webhook/request-reply\`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
