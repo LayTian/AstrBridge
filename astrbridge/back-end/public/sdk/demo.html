@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AdapterClient Demo</title>
+    <style>
+      body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px}
+      input,button{font-size:14px;padding:8px}
+      #log{white-space:pre-wrap;border:1px solid #ddd;border-radius:8px;padding:12px;height:320px;overflow:auto}
+      .row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <label>user_id</label>
+      <input id="uid" value="10001" />
+      <button id="btnConnect">连接</button>
+      <button id="btnClose">断开</button>
+    </div>
+    <div class="row">
+      <label>ws_url</label>
+      <input id="wsurl" style="flex:1" readonly />
+    </div>
+    <div class="row">
+      <input id="msg" style="flex:1" placeholder="输入消息…" />
+      <button id="btnSend">发送</button>
+    </div>
+    <div id="log"></div>
+
+    <script type="module">
+      import { AdapterClient } from './adapter-client.mjs'
+
+      const logEl = document.getElementById('log')
+      const uidEl = document.getElementById('uid')
+      const msgEl = document.getElementById('msg')
+      const wsUrlEl = document.getElementById('wsurl')
+
+      const append = (s) => {
+        logEl.textContent += s + '\n'
+        logEl.scrollTop = logEl.scrollHeight
+      }
+
+      let client = null
+      const computeWsUrl = () => {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+        const host = location.hostname || 'localhost'
+        const port = location.port ? Number(location.port) : 8080
+        return `${proto}://${host}:${port}`
+      }
+      wsUrlEl.value = computeWsUrl()
+      uidEl.addEventListener('input', () => {
+        wsUrlEl.value = computeWsUrl()
+      })
+
+      document.getElementById('btnConnect').onclick = async () => {
+        client?.close()
+        client = new AdapterClient({ url: computeWsUrl(), userId: uidEl.value })
+        client.onOpen(() => append('OPEN'))
+        client.onClose(() => append('CLOSE'))
+        client.onError(() => append('ERROR'))
+        client.onReply((text) => append('REPLY: ' + text))
+        try {
+          await client.connect()
+        } catch (e) {
+          append('CONNECT_FAILED: ' + (e?.message || String(e)))
+        }
+      }
+
+      document.getElementById('btnClose').onclick = () => {
+        client?.close()
+      }
+
+      document.getElementById('btnSend').onclick = () => {
+        if (!client) return
+        const t = msgEl.value.trim()
+        if (!t) return
+        try {
+          client.sendText(t)
+          append('SEND: ' + t)
+        } catch (e) {
+          append('SEND_FAILED: ' + (e?.message || String(e)))
+        }
+        msgEl.value = ''
+      }
+    </script>
+  </body>
+</html>

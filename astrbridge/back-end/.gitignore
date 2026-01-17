@@ -1,0 +1,6 @@
+node_modules/
+dist/
+web-admin/node_modules/
+web-admin/dist/
+*.log
+.env

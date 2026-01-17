@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AstrBridge · 消息接入网关与管理平台</title>
+    <meta
+      name="description"
+      content="AstrBridge 是一个面向 AstrBot 的消息接入网关与管理平台，提供 WebSocket 与 HTTP 双接入、同步问答、会话与离线队列、幂等、日志/审计/指标与健康度。"
+    />
+    <style>
+      :root {
+        --bg: #070b14;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel2: rgba(255, 255, 255, 0.08);
+        --border: rgba(148, 163, 184, 0.22);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(226, 232, 240, 0.7);
+        --muted2: rgba(226, 232, 240, 0.55);
+        --brand: #60a5fa;
+        --brand2: #22c55e;
+        --danger: #f87171;
+        --shadow: 0 18px 55px rgba(0, 0, 0, 0.55);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+
+      body {
+        color: var(--text);
+        background: radial-gradient(1200px 800px at 15% 10%, rgba(96, 165, 250, 0.25), rgba(7, 11, 20, 0)),
+          radial-gradient(900px 700px at 70% 0%, rgba(34, 197, 94, 0.16), rgba(7, 11, 20, 0)),
+          radial-gradient(900px 700px at 90% 70%, rgba(248, 113, 113, 0.14), rgba(7, 11, 20, 0)),
+          var(--bg);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei, Arial, sans-serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 24px 20px 80px;
+      }
+
+      .topnav {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        background: rgba(7, 11, 20, 0.55);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        backdrop-filter: blur(10px);
+      }
+
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 900;
+        letter-spacing: 0.2px;
+      }
+
+      .mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(96, 165, 250, 1), rgba(34, 197, 94, 1));
+        box-shadow: 0 14px 40px rgba(96, 165, 250, 0.3);
+      }
+
+      .navlinks {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .chip {
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 12px;
+      }
+
+      .chip:hover {
+        background: rgba(255, 255, 255, 0.07);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .hero {
+        margin-top: 22px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+        align-items: stretch;
+      }
+
+      .heroMain {
+        padding: 26px 22px;
+        border-radius: 22px;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+        box-shadow: var(--shadow);
+      }
+
+      .kicker {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted);
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(34, 197, 94, 1);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+      }
+
+      h1 {
+        margin: 16px 0 12px;
+        font-size: 42px;
+        line-height: 1.12;
+        letter-spacing: -0.3px;
+      }
+
+      .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .ctaRow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 14px;
+        padding: 12px 14px;
+        border: 1px solid transparent;
+        font-weight: 900;
+        font-size: 14px;
+        cursor: pointer;
+        transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, color 120ms ease;
+        user-select: none;
+      }
+
+      .btn:active {
+        transform: translateY(1px);
+      }
+
+      .btnPrimary {
+        background: linear-gradient(135deg, rgba(96, 165, 250, 1), rgba(34, 197, 94, 1));
+        color: rgba(7, 11, 20, 0.95);
+        box-shadow: 0 18px 48px rgba(96, 165, 250, 0.25);
+      }
+
+      .btnPrimary:hover {
+        filter: saturate(1.08);
+      }
+
+      .btnGhost {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--border);
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .btnGhost:hover {
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .btnDanger {
+        background: rgba(248, 113, 113, 0.12);
+        border-color: rgba(248, 113, 113, 0.25);
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .btnDanger:hover {
+        background: rgba(248, 113, 113, 0.16);
+      }
+
+      .heroSide {
+        padding: 18px 18px;
+        border-radius: 22px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .sideTitle {
+        font-weight: 900;
+        margin: 4px 0 10px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .kv {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .kvItem {
+        padding: 12px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .kvK {
+        color: var(--muted2);
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: 0.2px;
+      }
+
+      .kvV {
+        margin-top: 4px;
+        font-weight: 900;
+        font-size: 13px;
+      }
+
+      .grid {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 12px;
+      }
+
+      .card {
+        grid-column: span 4;
+        padding: 18px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .cardTitle {
+        margin: 0 0 6px;
+        font-weight: 900;
+        letter-spacing: 0.1px;
+      }
+
+      .cardDesc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .section {
+        margin-top: 18px;
+        padding: 18px 16px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .sectionTitle {
+        margin: 0 0 8px;
+        font-weight: 900;
+        font-size: 15px;
+      }
+
+      .steps {
+        margin: 0;
+        padding: 0 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .steps li {
+        margin: 6px 0;
+      }
+
+      .foot {
+        margin-top: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--muted2);
+        font-size: 12px;
+      }
+
+      .foot a {
+        color: rgba(226, 232, 240, 0.82);
+        font-weight: 800;
+      }
+
+      .foot a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 980px) {
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 34px;
+        }
+        .card {
+          grid-column: span 6;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .card {
+          grid-column: span 12;
+        }
+        .topnav {
+          flex-wrap: wrap;
+        }
+        .navlinks {
+          width: 100%;
+          justify-content: flex-start;
+          margin-left: 0;
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topnav">
+        <div class="logo">
+          <span class="mark"></span>
+          <span>AstrBridge</span>
+        </div>
+        <div class="navlinks">
+          <a class="chip" href="/status/">运行状态</a>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="heroMain">
+          <div class="kicker"><span class="dot"></span>消息接入网关与管理平台</div>
+          <h1>把业务系统、浏览器与 AstrBot 的消息链路连成一条可运维的通道</h1>
+          <p class="sub">
+            面向“服务端调用”和“交互式聊天”的双接入：HTTP 接入接口 + WebSocket 直连；配套会话管理、离线队列、幂等、日志/审计、指标与健康度看板。
+          </p>
+          <div class="ctaRow">
+            <a class="btn btnPrimary" href="/admin/">进入管理后台</a>
+            <a class="btn btnGhost" href="/docs/">查看接口文档</a>
+          </div>
+        </div>
+
+        <div class="heroSide">
+          <div class="sideTitle">能力概览</div>
+          <div class="kv">
+            <div class="kvItem">
+              <div class="kvK">接入方式</div>
+              <div class="kvV">HTTP / WebSocket 双通道</div>
+            </div>
+            <div class="kvItem">
+              <div class="kvK">交互模式</div>
+              <div class="kvV">异步投递 / 同步问答</div>
+            </div>
+            <div class="kvItem">
+              <div class="kvK">运维可见性</div>
+              <div class="kvV">日志 · 审计 · 指标 · 健康度</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="cardTitle">接入与适配</div>
+          <p class="cardDesc">对外提供 HTTP 接入接口与 WebSocket 直连；对内连接 AstrBot，并按 OneBot v11 私聊事件投递与回推。</p>
+        </div>
+        <div class="card">
+          <div class="cardTitle">可靠性机制</div>
+          <p class="cardDesc">按 user_id 排队与并发隔离；离线队列落盘；幂等键避免重试重复投递；可配置上限与清理策略。</p>
+        </div>
+        <div class="card">
+          <div class="cardTitle">工程化运维</div>
+          <p class="cardDesc">管理后台提供会话/日志/审计/分析/配置；支持角色权限控制，关键操作可追踪。</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sectionTitle">快速上手</div>
+        <ol class="steps">
+          <li>阅读接口文档：<a href="/docs/">/docs</a>（OpenAPI 自动生成与示例）。</li>
+          <li>进入管理后台：<a href="/admin/">/admin</a>（未登录会跳转登录页）。</li>
+        </ol>
+      </div>
+
+      <div class="foot">
+        <div>AstrBridge · 项目主页</div>
+        <div>
+          <a href="/openapi.json" target="_blank" rel="noreferrer">OpenAPI JSON</a>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const adminHref = '/admin/';
+        const go = (href) => () => {
+          window.location.href = href;
+        };
+        const buttons = Array.from(document.querySelectorAll('a.btn'));
+        const adminBtn = buttons.find((b) => b.getAttribute('href') === adminHref);
+        const fallback = 'http://localhost:5174/';
+
+        const tryAdmin = async (path, fb) => {
+          try {
+            const r = await fetch(path, { method: 'GET', cache: 'no-store' });
+            if (r.ok || (r.status >= 300 && r.status < 500)) {
+              window.location.href = path;
+              return;
+            }
+          } catch (_) {}
+          window.location.href = fb;
+        };
+
+        if (adminBtn) {
+          adminBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            tryAdmin(adminHref, fallback);
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

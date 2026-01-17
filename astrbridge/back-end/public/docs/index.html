@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AstrBridge 接口文档</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        background: #f8fafc;
+      }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(248, 250, 252, 0.92);
+        backdrop-filter: blur(10px);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei, Arial,
+          sans-serif;
+      }
+      .brand {
+        font-weight: 900;
+        letter-spacing: 0.2px;
+        color: #0b1220;
+      }
+      .muted {
+        color: #64748b;
+        font-size: 12px;
+      }
+      .links {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      a {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      #redoc-container {
+        flex: 1;
+        min-height: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="brand">AstrBridge 接口文档</div>
+      <div class="muted">接口规范（OpenAPI 3.0）· 自动生成 · /docs</div>
+      <div class="links">
+        <a href="/openapi.json" target="_blank" rel="noreferrer">规范 JSON</a>
+        <a href="/api/status" target="_blank" rel="noreferrer">状态接口</a>
+        <a href="/api/metrics" target="_blank" rel="noreferrer">指标接口</a>
+      </div>
+    </div>
+    <div id="redoc-container"></div>
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <script>
+      Redoc.init('/openapi.json', {
+        hideDownloadButton: false,
+        expandSingleSchemaField: true,
+        scrollYOffset: '.topbar',
+        jsonSampleExpandLevel: 3,
+        pathInMiddlePanel: true,
+        theme: {
+          spacing: { unit: 8 },
+          colors: {
+            primary: { main: '#2563eb' },
+            text: { primary: '#0b1220', secondary: '#64748b' },
+            http: {
+              get: '#16a34a',
+              post: '#2563eb',
+              put: '#f59e0b',
+              patch: '#f59e0b',
+              delete: '#dc2626'
+            }
+          },
+          typography: {
+            fontSize: '14px',
+            lineHeight: '1.65',
+            fontFamily:
+              'Inter, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei, Arial, sans-serif',
+            code: {
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, monospace'
+            },
+            headings: {
+              fontFamily:
+                'Inter, system-ui, -apple-system, Segoe UI, Roboto, PingFang SC, Microsoft YaHei, Arial, sans-serif',
+              fontWeight: '700',
+              lineHeight: '1.25',
+              h1: { fontSize: '28px' },
+              h2: { fontSize: '22px' },
+              h3: { fontSize: '18px' }
+            }
+          },
+          sidebar: {
+            width: '300px',
+            backgroundColor: '#ffffff',
+            textColor: '#334155',
+            activeTextColor: '#0b1220',
+            groupItems: { activeBackgroundColor: 'rgba(37, 99, 235, 0.10)' }
+          },
+          rightPanel: {
+            backgroundColor: '#0b1220',
+            textColor: '#e5e7eb',
+            width: '420px'
+          }
+        }
+      }, document.getElementById('redoc-container'), function() {
+        const observer = new MutationObserver(function(mutations) {
+          document.querySelectorAll('a span, button span').forEach(el => {
+            const map = {
+              Download: '下载规范',
+              'Download OpenAPI specification': '下载 OpenAPI 规范',
+              Responses: '响应结果',
+              'Request samples': '请求示例',
+              'Response samples': '响应示例',
+              Authorizations: '鉴权方式',
+              Security: '安全验证',
+              Schemas: '数据结构',
+              Parameters: '参数',
+              Header: '请求头',
+              'Path parameters': '路径参数',
+              'Query parameters': '查询参数',
+              'Request Body': '请求体',
+              'Request body': '请求体',
+              Example: '示例',
+              'Example Value': '示例值',
+              'Example value': '示例值',
+              Copy: '复制',
+              Copied: '已复制',
+              'Server variables': '服务端变量'
+            };
+            const key = (el.textContent || '').trim();
+            const next = map[key];
+            if (next) el.textContent = next;
+          });
+          
+          const searchInput = document.querySelector('input[type="search"]');
+          if (searchInput && searchInput.placeholder === 'Search...') {
+            searchInput.placeholder = '搜索接口 / 字段...';
+          }
+          if (searchInput && !searchInput.placeholder) {
+            searchInput.placeholder = '搜索接口 / 字段...';
+          }
+
+          document.querySelectorAll('h3, h4, h5').forEach(el => {
+             if (el.textContent === 'Responses') el.textContent = '响应定义';
+             if (el.textContent === 'Request Body schema') el.textContent = '请求体定义';
+             if (el.textContent === 'Schema') el.textContent = '结构定义';
+             if (el.textContent === 'Schema definition') el.textContent = '结构定义';
+          });
+        });
+
+        observer.observe(document.getElementById('redoc-container'), { childList: true, subtree: true, characterData: true });
+      });
+    </script>
+  </body>
+</html>

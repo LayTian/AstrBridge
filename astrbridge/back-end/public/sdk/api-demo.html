@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Integration API Demo</title>
+    <style>
+      body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px}
+      input,button{font-size:14px;padding:8px}
+      #log{white-space:pre-wrap;border:1px solid #ddd;border-radius:8px;padding:12px;height:320px;overflow:auto}
+      .row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+      .row label{min-width:92px}
+      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <label>integration_id</label>
+      <input id="iid" value="webhook" />
+    </div>
+    <div class="row">
+      <label>x-integration-secret</label>
+      <input id="secret" placeholder="可选（若后端启用 INTEGRATION_SECRET）" style="flex:1" />
+    </div>
+    <div class="row">
+      <label>ws_url</label>
+      <input id="wsurl" class="mono" style="flex:1" readonly />
+      <button id="btnWsConnect">WS 连接</button>
+      <button id="btnWsClose">WS 断开</button>
+    </div>
+    <div class="row">
+      <label>user_id</label>
+      <input id="uid" value="10001" />
+    </div>
+    <div class="row">
+      <label>text</label>
+      <input id="msg" style="flex:1" placeholder="输入消息…" />
+      <button id="btnSend">POST</button>
+    </div>
+    <div class="row">
+      <label>idempotency_key</label>
+      <input id="idemKey" style="flex:1" placeholder="可选（Idempotency-Key）" />
+    </div>
+    <div class="row">
+      <label>wait_reply</label>
+      <input id="waitReply" type="checkbox" checked />
+      <label style="min-width:0">timeout_ms</label>
+      <input id="timeoutMs" value="15000" style="width:120px" />
+    </div>
+    <div class="row">
+      <label>endpoint</label>
+      <input id="endpoint" class="mono" style="flex:1" readonly />
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <label>request_id</label>
+      <textarea id="requestId" class="mono" style="flex:1;height:52px;padding:12px;border:1px solid #ddd;border-radius:8px" readonly></textarea>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <label>http_response</label>
+      <textarea id="httpResp" style="flex:1;height:120px;padding:12px;border:1px solid #ddd;border-radius:8px" readonly></textarea>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <label>ws_messages</label>
+      <textarea id="wsResp" style="flex:1;height:120px;padding:12px;border:1px solid #ddd;border-radius:8px" readonly></textarea>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <label>bot_reply</label>
+      <textarea id="botReply" style="flex:1;height:88px;padding:12px;border:1px solid #ddd;border-radius:8px" readonly></textarea>
+    </div>
+    <div id="log"></div>
+
+    <script>
+      const logEl = document.getElementById('log')
+      const iidEl = document.getElementById('iid')
+      const secretEl = document.getElementById('secret')
+      const uidEl = document.getElementById('uid')
+      const msgEl = document.getElementById('msg')
+      const idemKeyEl = document.getElementById('idemKey')
+      const waitReplyEl = document.getElementById('waitReply')
+      const timeoutMsEl = document.getElementById('timeoutMs')
+      const endpointEl = document.getElementById('endpoint')
+      const wsUrlEl = document.getElementById('wsurl')
+      const requestIdEl = document.getElementById('requestId')
+      const httpRespEl = document.getElementById('httpResp')
+      const wsRespEl = document.getElementById('wsResp')
+      const botReplyEl = document.getElementById('botReply')
+
+      const append = (s) => {
+        logEl.textContent += s + '\n'
+        logEl.scrollTop = logEl.scrollHeight
+      }
+
+      const setHttpResp = (text) => {
+        httpRespEl.value = text
+      }
+
+      const appendWsResp = (text) => {
+        wsRespEl.value = (wsRespEl.value ? wsRespEl.value + '\n' : '') + text
+        wsRespEl.scrollTop = wsRespEl.scrollHeight
+      }
+
+      const setBotReply = (text) => {
+        botReplyEl.value = text
+      }
+
+      const setRequestId = (text) => {
+        requestIdEl.value = text
+      }
+
+      let ws = null
+
+      const computeWsUrl = () => {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws'
+        const host = location.hostname || 'localhost'
+        const port = location.port ? Number(location.port) : 8080
+        const userId = uidEl.value.trim()
+        const url = new URL(`${proto}://${host}:${port}`)
+        if (userId) url.searchParams.set('user_id', userId)
+        return url.toString()
+      }
+
+      const computeEndpoint = () => `/api/integrations/${encodeURIComponent(iidEl.value.trim() || 'demo')}/events`
+      const computeRequestReplyEndpoint = () =>
+        `/api/integrations/${encodeURIComponent(iidEl.value.trim() || 'demo')}/request-reply`
+      const refreshEndpoint = () => {
+        endpointEl.value = waitReplyEl.checked ? computeRequestReplyEndpoint() : computeEndpoint()
+      }
+      iidEl.addEventListener('input', refreshEndpoint)
+      waitReplyEl.addEventListener('change', refreshEndpoint)
+      refreshEndpoint()
+
+      const refreshWsUrl = () => (wsUrlEl.value = computeWsUrl())
+      uidEl.addEventListener('input', refreshWsUrl)
+      refreshWsUrl()
+
+      document.getElementById('btnWsConnect').onclick = () => {
+        try {
+          ws?.close()
+        } catch {}
+        const url = computeWsUrl()
+        append(`WS_CONNECT ${url}`)
+        ws = new WebSocket(url)
+        ws.onopen = () => {
+          append('WS_OPEN')
+          appendWsResp('WS_OPEN')
+        }
+        ws.onclose = () => {
+          append('WS_CLOSE')
+          appendWsResp('WS_CLOSE')
+        }
+        ws.onerror = () => {
+          append('WS_ERROR')
+          appendWsResp('WS_ERROR')
+        }
+        ws.onmessage = (evt) => {
+          const data = typeof evt.data === 'string' ? evt.data : ''
+          if (!data) return
+          if (data === 'PONG' || data === 'PING') return
+          try {
+            const parsed = JSON.parse(data)
+            if (parsed?.event === 'message_reply') {
+              const t = String(parsed?.payload?.text || '')
+              append('BOT_REPLY: ' + t)
+              appendWsResp('BOT_REPLY: ' + t)
+              setBotReply(t)
+              return
+            }
+          } catch {}
+          append('WS_MSG: ' + data)
+          appendWsResp(data)
+        }
+      }
+
+      document.getElementById('btnWsClose').onclick = () => {
+        try {
+          ws?.close()
+        } catch {}
+        ws = null
+      }
+
+      document.getElementById('btnSend').onclick = async () => {
+        const userId = uidEl.value.trim()
+        const text = msgEl.value.trim()
+        if (!/^\d+$/.test(userId)) {
+          append('ERROR: user_id 必须为纯数字')
+          setHttpResp('ERROR: user_id 必须为纯数字')
+          return
+        }
+        if (!text) return
+
+        const headers = { 'Content-Type': 'application/json' }
+        const secret = secretEl.value.trim()
+        if (secret) headers['x-integration-secret'] = secret
+        const idemKey = idemKeyEl.value.trim()
+        if (idemKey) headers['Idempotency-Key'] = idemKey
+
+        const shouldWait = !!waitReplyEl.checked
+        const endpoint = shouldWait ? computeRequestReplyEndpoint() : computeEndpoint()
+        append(`POST ${endpoint}`)
+        setHttpResp('')
+        setRequestId('')
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          append('TIP: 该 API 只返回发送结果；机器人回复会通过 WS 推送到对应 user_id（请先 WS 连接）。')
+        }
+        try {
+          const timeoutMs = Number(timeoutMsEl.value)
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              user_id: userId,
+              text,
+              ...(shouldWait ? { timeout_ms: Number.isFinite(timeoutMs) ? timeoutMs : 15000 } : {}),
+              ...(idemKey ? { idempotency_key: idemKey } : {}),
+            }),
+          })
+          const body = await res.text()
+          const ct = res.headers.get('content-type') || ''
+          let shown = body
+          if (ct.includes('application/json')) {
+            try {
+              const parsed = JSON.parse(body)
+              shown = JSON.stringify(parsed, null, 2)
+              if (parsed && typeof parsed === 'object' && parsed.request_id) {
+                setRequestId(String(parsed.request_id))
+              }
+            } catch {}
+          }
+          append(`STATUS ${res.status}`)
+          append(body)
+          setHttpResp(`STATUS ${res.status}\n` + shown)
+        } catch (e) {
+          const msg = 'FETCH_FAILED: ' + (e?.message || String(e))
+          append(msg)
+          setHttpResp(msg)
+        } finally {
+          msgEl.value = ''
+        }
+      }
+    </script>
+  </body>
+</html>

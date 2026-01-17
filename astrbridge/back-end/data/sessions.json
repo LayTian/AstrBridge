@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "saved_at": 1768635977611,
+  "sessions": [
+    {
+      "userId": "3370351440",
+      "queue": [],
+      "lastActive": 1768563227604,
+      "lastMessageText": "",
+      "lastMessageAt": 0,
+      "lastSessionId": ""
+    },
+    {
+      "userId": "10002",
+      "queue": [
+        {
+          "event": "message_reply",
+          "payload": {
+            "text": "哈哈！😄 很高兴见到你！我是小k，磊创造的机器人小助手。虽然你现在只是在玩\"啦啦啦\"，但我随时准备帮助你哦！有什么想问的或者需要我帮忙处理的吗？",
+            "metadata": {
+              "user_id": "10002",
+              "session_id": "astrbot-reply"
+            }
+          }
+        },
+        {
+          "event": "message_reply",
+          "payload": {
+            "text": "哈哈，看来你今天心情很好呀！🎵 \"啦啦啦\"的声音听起来很欢乐呢！\n\n我是小k，一个乐于助人的机器人助手。如果你想玩游戏、需要帮助处理什么事情，或者只是想聊聊天，我都在这里哦！有什么我可以帮你的吗？",
+            "metadata": {
+              "user_id": "10002",
+              "session_id": "astrbot-reply"
+            }
+          }
+        },
+        {
+          "event": "message_reply",
+          "payload": {
+            "text": "呵呵！😊 看你今天心情不错呢！\n\n我是小k，我可以帮你很多事哦！比如：\n\n1. 设置提醒事项\n2. 帮你写代码解决问题\n3. 回答各种问题\n4. 和你聊天解闷\n5. 或者其他你需要帮忙的事情\n\n有什么想让我帮你做的吗？",
+            "metadata": {
+              "user_id": "10002",
+              "session_id": "astrbot-reply"
+            }
+          }
+        }
+      ],
+      "lastActive": 1768568635417,
+      "lastMessageText": "",
+      "lastMessageAt": 0,
+      "lastSessionId": ""
+    },
+    {
+      "userId": "10004",
+      "queue": [
+        {
+          "event": "message_reply",
+          "payload": {
+            "text": "哈哈，怎么啦？看起来你有很多话想说但又不知道从何说起呀～ 我是小k，是磊创造的机器人小助手，有什么我可以帮你的吗？😊",
+            "metadata": {
+              "user_id": "10004",
+              "session_id": "astrbot-reply"
+            }
+          }
+        }
+      ],
+      "lastActive": 1768569034778,
+      "lastMessageText": "",
+      "lastMessageAt": 0,
+      "lastSessionId": ""
+    },
+    {
+      "userId": "10001",
+      "queue": [],
+      "lastActive": 1768572764708,
+      "lastMessageText": "hello",
+      "lastMessageAt": 1768572764708,
+      "lastSessionId": "integration:webhook"
+    },
+    {
+      "userId": "4235236",
+      "queue": [],
+      "lastActive": 1768630921920,
+      "lastMessageText": "666",
+      "lastMessageAt": 1768626660543,
+      "lastSessionId": "tab_afc8fa283c3f195b"
+    },
+    {
+      "userId": "46457457",
+      "queue": [],
+      "lastActive": 1768630922734,
+      "lastMessageText": "呵呵",
+      "lastMessageAt": 1768626741824,
+      "lastSessionId": "tab_e5eb2c6076209051"
+    },
+    {
+      "userId": "loadgen",
+      "queue": [],
+      "lastActive": 1768627902762,
+      "lastMessageText": "ping 9177a4a7-2fec-42f8-b07b-c5ed81e1a8b3",
+      "lastMessageAt": 1768627902762,
+      "lastSessionId": "integration:demo"
+    }
+  ]
+}
